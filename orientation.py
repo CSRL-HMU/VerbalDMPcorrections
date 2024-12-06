@@ -93,6 +93,18 @@ def rot2quatCont(R, Qprev):
     return Q
 
 
+# takes a 4xN quaternion series and eliminates discontinuities
+def makeContinuous(Q_array):
+    
+    N = Q_array.shape[1]
+
+    for i in range(1, N):
+        if la.norm( Q_array[i] - Q_array[i-1]) > la.norm( - Q_array[i] - Q_array[i-1] ):
+            Q_array[i] = - Q_array[i]
+
+    return Q_array
+
+
 # returns the rotation matrix form of a quaternion Q
 def quat2rot(Q):
 

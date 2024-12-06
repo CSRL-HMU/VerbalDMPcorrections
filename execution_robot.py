@@ -100,6 +100,7 @@ p_train =  np.array(np.transpose(wanted_x_train[:,0:3]))
 Q_train =  np.array(np.transpose(wanted_x_train[:,3:7]))
 t_train = np.array(list(range(p_train[1,:].size))) * dt
 
+Q_train = makeContinuous(Q_train)
 
 Q_target = Q_train[:,-1]
 
