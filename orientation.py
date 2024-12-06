@@ -82,8 +82,17 @@ def rot2quat(R):
 
     return Q / la.norm(Q)
 
+# returns the quaternion form of a rotation matrix closest to Qprev. "Cont" stands for continuous
+def rot2quatCont(R, Qprev):
     
+    Q = rot2quat(R)
     
+    if la.norm( Qprev - Q) > la.norm(Qprev - (- Q)):
+        Q = -Q
+
+    return Q
+
+
 # returns the rotation matrix form of a quaternion Q
 def quat2rot(Q):
 
@@ -224,10 +233,12 @@ def quat2Theta_k(Q):
     
     Q = enforceQuat(Q)
     
-    #n=Q[0]
-    theta = 2 * np.arccos(Q[0]) # in degrees  #or else theta = 2 * np.arccos(n) in rads
-    e = Q[1:4] 
-    k = e / la.norm(e)
+    v = np.max([np.min([ Q[0] , 1]), -1])
+
+    nrm = la.norm(Q[1:3+1])
+
+    theta = np.arctan2(nrm, v) 
+    k = Q[1:3+1] / nrm
 
     return theta, k
 
