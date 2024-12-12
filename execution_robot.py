@@ -17,6 +17,7 @@ from CSRL_math import *
 from dmpSO3 import *
 from dmpSE3 import *
 
+
 #define UR3e
 rtde_c = rtde_control.RTDEControlInterface("192.168.1.60")
 rtde_r = rtde_receive.RTDEReceiveInterface("192.168.1.60")
@@ -104,7 +105,7 @@ Q_train = makeContinuous(Q_train)
 
 Q_target = Q_train[:,-1]
 
-model = dmpSE3(N_in=20, T_in=t_train[-1]) 
+model = dmpSE3(N_in=50, T_in=t_train[-1]) 
 model.train(dt, p_array=p_train, Q_array=Q_train, plotPerformance=True)
 
 
@@ -122,6 +123,7 @@ ddeo = np.zeros(3)
 deo = np.zeros(3)
 
 Q_desired = Q0.copy()  # Initially, setting the desired orientation to the initial orientation R0
+Q = Q0.copy()
 
 eo = logError(Q_target, Q0)  # Initial orientation error
 dot_eo = np.zeros(3)
@@ -156,17 +158,18 @@ dz = 0.0
 
 
 
-####### Amplification test DMP regarding the Position #######
+####### Amplification #######
 
 ampfactor = 1
-tstart = t_train[-1]/3
-tstop = 2*t_train[-1]/3
+tstart = t_train[-1]/3  
+tstop = 2*t_train[-1]/3  
 model.amplify_window(tstart, tstop, ampfactor)
 
 
 
 # Gains
 K = 4.0 * np.identity(6)
+K[-3:, -3:] = 5.0 * K[-3:, -3:]  # Orientation gains
 
 
 # User input to continue
@@ -228,7 +231,8 @@ while t < t_train[-1]:
     velocity_matrix = np.hstack((dot_pd, omegad))
     
     # error matrix 
-    eo_robot = logError(R, Q_desired)
+    Q = rot2quatCont(R,Q)
+    eo_robot = logError(Q, Q_desired)
     error_matrix = np.hstack((p - pd, eo_robot))        
 
 
@@ -236,7 +240,7 @@ while t < t_train[-1]:
     qdot = Jinv @ (velocity_matrix - K @ error_matrix)
     
     # set joint speed
-    rtde_c.speedJ(qdot, 5.0, dt)
+    rtde_c.speedJ(qdot, 10.0, dt)
 
     # log data
     tlog = np.vstack((tlog, t))
