@@ -99,8 +99,8 @@ def makeContinuous(Q_array):
     N = Q_array.shape[1]
 
     for i in range(1, N):
-        if la.norm( Q_array[i] - Q_array[i-1]) > la.norm( - Q_array[i] - Q_array[i-1] ):
-            Q_array[i] = - Q_array[i]
+        if la.norm( Q_array[:,i] - Q_array[:, i-1]) > la.norm( - Q_array[:, i] - Q_array[:, i-1] ):
+            Q_array[:, i] = - Q_array[:, i]
 
     return Q_array
 
